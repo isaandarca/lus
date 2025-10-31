@@ -57,9 +57,11 @@ public class UtilsCalculoDemoraSobreDemora  {
 			SaldosTotalesOp saldos, EventosOperacion eventosOperacion, List<Date> festivos, List<Date> calendarioDemoras, Map<Date, List<Cobro>> cobros) throws PlanEventoException {
 		
 		System.out.println("=== INICIO calcularDemoraSobreDemora ===");
+		System.out.println("Tipo Operacion: " + (planDemora.getOperacion() instanceof OperacionVPO ? "VPO" : (planDemora.getOperacion() instanceof OperacionFD ? "FD" : "OTRA")));
+		System.out.println("fechaInicioEjecucionEventos: " + fechaInicioEjecucionEventos);
 		System.out.println("demoras.size: " + (demoras != null ? demoras.size() : "null"));
 		for (EventoAutomatico dem : demoras) {
-		    System.out.println("Demora: " + dem.getFechaInicio() + " -> " + dem.getFechaEvento());
+		    System.out.println("  Demora entrada: " + dem.getFechaInicio() + " -> " + dem.getFechaEvento() + " | importe=" + (dem.getImporte() != null ? dem.getImporte().getCantidad() : "null"));
 		}
 
 		List<EventoAutomatico> demorasSobreDemoras = new ArrayList<>();
@@ -172,7 +174,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 					BigDecimal importeASumar = BigDecimal.ZERO;
 
 					if(fechaInicioEjecucionEventos.compareTo(liqDemora.getFechaInicio())>=0) {
-						System.out.println("VPO: RAMA 1 - fechaInicioEjecucionEventos >= liqDemora.getFechaInicio() | Demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
+						System.out.println("RAMA 1 - fechaInicioEjecucionEventos >= liqDemora.getFechaInicio() | Demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
 						//Genero demoras de la fecha inicio del evento a la fecha inicio ejecución
 						List<CantidadTramo> saldoDemoras = saldos.getSaldosOperacion(liqDemora.getFechaInicio(), liqDemora.getFechaEvento(),
 								EnumTipoSaldos.SALDO_MORA_DEMORA);
@@ -323,7 +325,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 						}
 					}
 					else {
-						System.out.println("VPO: RAMA 2 - fechaInicioEjecucionEventos < liqDemora.getFechaInicio() | Demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
+						System.out.println("RAMA 2 - fechaInicioEjecucionEventos < liqDemora.getFechaInicio() | Demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
 						List<CantidadTramo> saldoDemoras = saldos.getSaldosOperacion(liqDemora.getFechaInicio(), liqDemora.getFechaEvento(),
 								EnumTipoSaldos.SALDO_MORA_DEMORA);
 						List<CantidadTramoDemora> tramosDemoraConSaldo = new ArrayList<CantidadTramoDemora>();
@@ -477,9 +479,9 @@ public class UtilsCalculoDemoraSobreDemora  {
 								}
 							}
 							if(!yaResto){
-								System.out.println("VPO DEBUG línea 479: Sumando importeASumar=" + importeASumar + " a importeAcumulado=" + importeAcumulado + " | tramo: " + tramo.getfechaIni() + " -> " + tramo.getfechaFin());
+								System.out.println("DEBUG RAMA 2 - línea 483: Sumando importeASumar=" + importeASumar + " a importeAcumulado=" + importeAcumulado + " | tramo: " + tramo.getfechaIni() + " -> " + tramo.getfechaFin());
 								importeAcumulado = importeAcumulado.add(importeASumar);
-								System.out.println("VPO DEBUG línea 479: Nuevo importeAcumulado=" + importeAcumulado);
+								System.out.println("DEBUG RAMA 2 - línea 483: Nuevo importeAcumulado=" + importeAcumulado);
 							}
 
 							listaCobros.removeAll(listaCobrosBorrarDos);
