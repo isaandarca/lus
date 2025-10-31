@@ -645,8 +645,30 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 			if(eventosOperacion.getDemorasAnteriores()!=null){
 				demoras.addAll(eventosOperacion.getDemorasAnteriores());
 				Collections.sort(demoras, new EventoFechaEventoComparator());
+
+				//INI FIX - Eliminar duplicados para VPO antes de calcular demoras sobre demoras
+				if(this.getOperacion() instanceof OperacionVPO && !esCarteraTraspasada(this.getOperacion())) {
+					System.out.println("VPO: Eliminando duplicados. demoras.size ANTES: " + demoras.size());
+					Set<String> demorasVistas = new HashSet<>();
+					List<EventoAutomatico> demorasSinDuplicados = new ArrayList<>();
+
+					for(EventoAutomatico dem : demoras) {
+						String key = dem.getFechaInicio() + "_" + dem.getFechaEvento();
+						if(!demorasVistas.contains(key)) {
+							demorasVistas.add(key);
+							demorasSinDuplicados.add(dem);
+						} else {
+							System.out.println("VPO: DUPLICADO eliminado: " + dem.getFechaInicio() + " -> " + dem.getFechaEvento());
+						}
+					}
+
+					demoras.clear();
+					demoras.addAll(demorasSinDuplicados);
+					System.out.println("VPO: Duplicados eliminados. demoras.size DESPUES: " + demoras.size());
+				}
+				//FIN FIX
 			}
-			
+
 			PlanInteresPorEvento pie = this.getPlanInteresPorDefectoVigente();
 			Set<TipoInteresFijado> tipos = pie.getTipoInteres();
 				
