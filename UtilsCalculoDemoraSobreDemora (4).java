@@ -156,6 +156,8 @@ public class UtilsCalculoDemoraSobreDemora  {
 
 
 				importeAcumulado = saldos.getSaldoOperacion(fechaInicioEjecucionEventos, EnumTipoSaldos.SALDO_MORA_DEMORA);
+				System.out.println("=== IMPORTE ACUMULADO INICIAL ===");
+				System.out.println("importeAcumulado inicial (desde saldos a fecha " + fechaInicioEjecucionEventos + "): " + importeAcumulado);
 
 				for(Evento liqDemora : demoras) {
 					if(!liqDemora.getFechaEvento().after(fechaInicioEjecucionEventos)) {
@@ -319,8 +321,10 @@ public class UtilsCalculoDemoraSobreDemora  {
 								sumarLiquidacion = false;
 							} else {
 								importeAcumulado = importeAcumulado.add(importeASumar);
+								System.out.println("FIN RAMA 1 (FD/VPO else): importeAcumulado antes=" + importeAcumulado + " + importeASumar=" + importeASumar);
 							}
 						} else { //FIN ICO-62994
+								System.out.println("FIN RAMA 1 (NO FD/VPO): importeAcumulado antes=" + importeAcumulado + " + importeASumar=" + importeASumar + " + liqDemora.importe=" + liqDemora.getImporte().getCantidad());
 							importeAcumulado = importeAcumulado.add(importeASumar).add(liqDemora.getImporte().getCantidad());
 						}
 					}
