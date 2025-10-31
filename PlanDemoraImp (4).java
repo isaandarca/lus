@@ -222,6 +222,7 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 			EventosOperacion eventosOperacion, List<Date> festivos, Map<Date, List<Cobro>> cobros)
 			throws PlanEventoException {
 
+		System.out.println("=== INICIO doEventos === fechaInicioEjecucionEventos: " + fechaInicioEjecucionEventos);
 		Date fechaInicioEjecucionEventosAux=new Date();
 		fechaInicioEjecucionEventosAux=fechaInicioEjecucionEventos;
 		
@@ -366,8 +367,12 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 					if(eventosOperacion.isCobro()) {
 						fechaInicioEjecucionEventosAux = FechaUtils.restaDia(fechaInicioEjecucionEventosAux);
 					}
+				System.out.println("=== LLAMADA a calcularDemoraSobreDemora desde doEventos (ELSE branch) ===");
+				System.out.println("    fechaInicioEjecucionEventosAux: " + fechaInicioEjecucionEventosAux);
+				System.out.println("    demoras.size ANTES: " + demoras.size());
 					UtilsCalculoDemoraSobreDemora.calcularDemoraSobreDemora(this,fechaInicioEjecucionEventosAux, demoras, saldosTotalesAux,
 							eventosOperacion, festivos, calendarioDemoras, cobros );
+				System.out.println("    demoras.size DESPUES: " + demoras.size());
 				}
 				
 				Iterator<EventoAutomatico> it = demoras.iterator();
@@ -419,6 +424,7 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 	public List<EventoAutomatico> doEventosDirectos(Date fechaInicioEjecucionEventos, SaldosTotalesOp saldos,
 			EventosOperacion eventosOperacion, List<Date> festivos, Map<Date, List<Cobro>> cobros)
 			throws PlanEventoException {
+		System.out.println("=== INICIO doEventosDirectos === fechaInicioEjecucionEventos: " + fechaInicioEjecucionEventos);
 		//INI ICO-62994
 		if(this.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(this.getOperacion()) &&
 				eventosOperacion.isBajaCobro()){
@@ -719,10 +725,13 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 						fechaInicioEjecucionEventos = FechaUtils.restaDia(fechaInicioEjecucionEventos);
 					}
 				}
-				
+
+				System.out.println("=== LLAMADA a calcularDemoraSobreDemora desde doEventosDirectos ===");
+				System.out.println("    fechaInicioEjecucionEventos: " + fechaInicioEjecucionEventos);
+				System.out.println("    demoras.size ANTES: " + demoras.size());
 				UtilsCalculoDemoraSobreDemora.calcularDemoraSobreDemora(this,fechaInicioEjecucionEventos, demoras, saldosTotalesAux,
 						eventosOperacion, festivos, calendarioDemoras, cobros );
-				
+				System.out.println("    demoras.size DESPUES: " + demoras.size());
 				}
 			System.out.println("LOG1 - DESPUES_DSD: " + demoras.size());
 			
@@ -958,8 +967,12 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 				if(eventosOperacion.isCobro()) {
 					fechaInicioEjecucionEventos = FechaUtils.restaDia(fechaInicioEjecucionEventos);
 				}
+				System.out.println("=== LLAMADA a calcularDemoraSobreDemora desde doEventosICD ===");
+				System.out.println("    fechaInicioEjecucionEventos: " + fechaInicioEjecucionEventos);
+				System.out.println("    demoras.size ANTES: " + demoras.size());
 				UtilsCalculoDemoraSobreDemora.calcularDemoraSobreDemora(this,fechaInicioEjecucionEventos, demoras, saldosTotalesAux,
 						eventosOperacion, festivos, calendarioDemoras, cobros );
+				System.out.println("    demoras.size DESPUES: " + demoras.size());
 			}
 		}
 
