@@ -339,15 +339,8 @@ public class UtilsCalculoDemoraSobreDemora  {
 						}
 						tramosDemora = tramosDemoraConSaldo;
 
-						// FIX VPO: Aplicar mismo filtro de fecha para VPO que para FD
-						if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO)
-								&& !esCarteraTraspasada(planDemora.getOperacion())) {
-							// Para FD y VPO: solo asignar importe si hoy > fecha ajustada (fecha ya pasó)
-							if(hoy.after(getFechaAjustadaCobro(planDemora,liqDemora.getFechaEvento(),festivos))) {
-								importeASumar = liqDemora.getImporte().getCantidad();
-							}
-						} else {
-							// Para otros tipos: asignar siempre
+						// FIX VPO: Agregado OperacionVPO a la condición para aplicar mismo filtro de fecha que FD
+						if(!((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,liqDemora.getFechaEvento(),festivos))) { //ICO-62994
 							importeASumar = liqDemora.getImporte().getCantidad();
 						}
 
@@ -430,19 +423,9 @@ public class UtilsCalculoDemoraSobreDemora  {
 								if (demoraSobreDemora.getImporte().getCantidad().compareTo(BigDecimal.ZERO)>0)
 									demorasSobreDemoras.add(demoraSobreDemora);
 
-								// FIX VPO: Para VPO, también aplicar filtro de fecha como en FD
-								// Solo sumar demora sobre demora si es de fecha futura (después del recálculo)
-								boolean deberiaSumar = false;
-								if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO)
-										&& !esCarteraTraspasada(planDemora.getOperacion())) {
-									// Para FD y VPO: solo sumar si hoy > fecha ajustada (fecha ya pasó)
-									deberiaSumar = hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos));
-								} else {
-									// Para otros tipos: sumar siempre
-									deberiaSumar = true;
-								}
-
-								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null && deberiaSumar) {
+								// FIX VPO: Agregado OperacionVPO a la condición para aplicar mismo filtro de fecha que FD
+								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null
+										&& (!((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos)))) { //ICO-62994
 									importeASumar = importeASumar.add(demoraSobreDemora.getImporte().getCantidad());
 								}
 							}
