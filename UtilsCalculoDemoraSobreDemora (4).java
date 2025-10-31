@@ -422,9 +422,25 @@ public class UtilsCalculoDemoraSobreDemora  {
 								if (demoraSobreDemora.getImporte().getCantidad().compareTo(BigDecimal.ZERO)>0)
 									demorasSobreDemoras.add(demoraSobreDemora);
 
-								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null
-										&& (!(planDemora.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos)))) { //ICO-62994
+								// FIX VPO: Para VPO, también aplicar filtro de fecha como en FD
+								// Solo sumar demora sobre demora si es de fecha futura (después del recálculo)
+								boolean deberiaSumar = false;
+								if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO)
+										&& !esCarteraTraspasada(planDemora.getOperacion())) {
+									// Para FD y VPO: solo sumar si hoy > fecha ajustada (fecha ya pasó)
+									deberiaSumar = hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos));
+								} else {
+									// Para otros tipos: sumar siempre
+									deberiaSumar = true;
+								}
+
+								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null && deberiaSumar) {
 									importeASumar = importeASumar.add(demoraSobreDemora.getImporte().getCantidad());
+									System.out.println("DEBUG L427: Sumando DSD importe=" + demoraSobreDemora.getImporte().getCantidad()
+										+ " fecha=" + demoraSobreDemora.getFechaEvento());
+								} else if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null) {
+									System.out.println("DEBUG L427: NO sumando DSD importe=" + demoraSobreDemora.getImporte().getCantidad()
+										+ " fecha=" + demoraSobreDemora.getFechaEvento() + " (fecha no ha pasado aún)");
 								}
 							}
 							
