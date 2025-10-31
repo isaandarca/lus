@@ -213,6 +213,12 @@ public class UtilsCalculoDemoraSobreDemora  {
 						//FIN ICO-62994
 						
 						for(CantidadTramo saldoDemora : saldoDemoras){
+							//INI ICO-XXXXX - Fix para VPO: skip tramos que terminan antes o en la fecha de recalculo
+							if(planDemora.getOperacion() instanceof OperacionVPO && !esCarteraTraspasada(planDemora.getOperacion())
+								&& saldoDemora.getfechaFin().compareTo(fechaInicioEjecucionEventos) <= 0) {
+								continue;
+							}
+							//FIN ICO-XXXXX
 							CantidadTramoDemora tramo = new CantidadTramoDemora(saldoDemora.getfechaIni(), saldoDemora.getfechaFin(), null, null);
 							for (TipoInteresFijado tipo : tipos) {
 								if ((FechaUtils.convertirFecha(liqDemora.getFechaInicio()).compareTo(FechaUtils.convertirFecha(tipo.getFecha_inicio()))>=0)
