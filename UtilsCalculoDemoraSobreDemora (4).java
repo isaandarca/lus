@@ -345,9 +345,6 @@ public class UtilsCalculoDemoraSobreDemora  {
 							// Para FD y VPO: solo asignar importe si hoy > fecha ajustada (fecha ya pasó)
 							if(hoy.after(getFechaAjustadaCobro(planDemora,liqDemora.getFechaEvento(),festivos))) {
 								importeASumar = liqDemora.getImporte().getCantidad();
-								System.out.println("DEBUG L342: Asignando importeASumar=" + importeASumar + " de demora fechaEvento=" + liqDemora.getFechaEvento());
-							} else {
-								System.out.println("DEBUG L342: NO asignando importeASumar de demora fechaEvento=" + liqDemora.getFechaEvento() + " (fecha no ha pasado aún)");
 							}
 						} else {
 							// Para otros tipos: asignar siempre
@@ -447,11 +444,6 @@ public class UtilsCalculoDemoraSobreDemora  {
 
 								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null && deberiaSumar) {
 									importeASumar = importeASumar.add(demoraSobreDemora.getImporte().getCantidad());
-									System.out.println("DEBUG L427: Sumando DSD importe=" + demoraSobreDemora.getImporte().getCantidad()
-										+ " fecha=" + demoraSobreDemora.getFechaEvento());
-								} else if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null) {
-									System.out.println("DEBUG L427: NO sumando DSD importe=" + demoraSobreDemora.getImporte().getCantidad()
-										+ " fecha=" + demoraSobreDemora.getFechaEvento() + " (fecha no ha pasado aún)");
 								}
 							}
 							

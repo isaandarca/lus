@@ -25,11 +25,6 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 
 	private List<Date> calendarioVencimientosCalculado=new ArrayList<Date>();
 
-	// FIX VPO: Variables para prevenir doble ejecución en recálculos
-	private transient Date fechaUltimaEjecucionVPO = null;
-	private transient List<EventoAutomatico> resultadosUltimaEjecucionVPO = null;
-	private transient int contadorEjecucionesVPO = 0;
-
 	public void setFechaPrimerVencDemPorEvento(Date fechaPrimerVencDemPorEvento) {
 		this.fechaPrimerVencDemPorEvento = fechaPrimerVencDemPorEvento;
 	}
@@ -227,16 +222,10 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 			EventosOperacion eventosOperacion, List<Date> festivos, Map<Date, List<Cobro>> cobros)
 			throws PlanEventoException {
 
-		// DEBUG: Log entry to doEventos to find who calls it twice
-		System.out.println("=== ENTRADA doEventos ===");
-		System.out.println("Fecha ejecución: " + fechaInicioEjecucionEventos);
-		System.out.println("TipoOperacion: " + (this.getOperacion() != null ? this.getOperacion().getClass().getSimpleName() : "null"));
-		System.out.println("Stack trace completo:");
-		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		for (int i = 0; i < Math.min(15, stackTrace.length); i++) {
-			System.out.println("  [" + i + "] " + stackTrace[i]);
+		// DEBUG VPO: Log entry for debugging delay-on-delay recalculation issue
+		if(this.getOperacion() instanceof OperacionVPO) {
+			System.out.println("VPO doEventos - Fecha ejecución: " + fechaInicioEjecucionEventos);
 		}
-		System.out.println("=========================");
 
 		Date fechaInicioEjecucionEventosAux=new Date();
 		fechaInicioEjecucionEventosAux=fechaInicioEjecucionEventos;
@@ -436,43 +425,9 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 			EventosOperacion eventosOperacion, List<Date> festivos, Map<Date, List<Cobro>> cobros)
 			throws PlanEventoException {
 
-		// DEBUG: Log entry to doEventosDirectos with call stack
-		System.out.println("=== ENTRADA doEventosDirectos ===");
-		System.out.println("Fecha ejecución: " + fechaInicioEjecucionEventos);
-		System.out.println("TipoOperacion: " + (this.getOperacion() != null ? this.getOperacion().getClass().getSimpleName() : "null"));
-		System.out.println("Contador ejecuciones VPO: " + contadorEjecucionesVPO);
-		System.out.println("Stack trace:");
-		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-		for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
-			System.out.println("  " + stackTrace[i]);
-		}
-		System.out.println("=================================");
-
-		// FIX VPO: Detectar y prevenir doble ejecución
+		// DEBUG VPO: Log entry for debugging delay-on-delay recalculation issue
 		if(this.getOperacion() instanceof OperacionVPO) {
-			contadorEjecucionesVPO++;
-			System.out.println("*** VPO EJECUCIÓN #" + contadorEjecucionesVPO + " ***");
-
-			// Si ya se ejecutó una vez y la fecha es diferente, retornar los resultados anteriores
-			if(contadorEjecucionesVPO > 1 && fechaUltimaEjecucionVPO != null) {
-				System.out.println("*** DETECTADA SEGUNDA EJECUCIÓN VPO ***");
-				System.out.println("Fecha primera ejecución: " + fechaUltimaEjecucionVPO);
-				System.out.println("Fecha segunda ejecución: " + fechaInicioEjecucionEventos);
-
-				// Si las fechas son diferentes, algo extraño está pasando
-				if(!fechaUltimaEjecucionVPO.equals(fechaInicioEjecucionEventos)) {
-					System.out.println("*** FECHAS DIFERENTES - PREVENIENDO CONTAMINACIÓN ***");
-					System.out.println("*** RETORNANDO RESULTADOS DE PRIMERA EJECUCIÓN ***");
-
-					// Retornar los resultados de la primera ejecución para evitar contaminación
-					if(resultadosUltimaEjecucionVPO != null) {
-						return new ArrayList<>(resultadosUltimaEjecucionVPO);
-					}
-				}
-			}
-
-			// Guardar la fecha de esta ejecución
-			fechaUltimaEjecucionVPO = fechaInicioEjecucionEventos;
+			System.out.println("VPO doEventosDirectos - Fecha ejecución: " + fechaInicioEjecucionEventos);
 		}
 
 		//INI ICO-62994
@@ -693,27 +648,7 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 		if (getConceptosDemora().contains(ConceptoDemoraEnum.DEMORAS.getCodigo())) {
 
 			if(eventosOperacion.getDemorasAnteriores()!=null){
-				// FIX: Para VPO, filtrar demorasAnteriores para evitar contaminación entre ejecuciones
-				// Solo incluir demoras con fechaEvento anterior a fechaInicioEjecucionEventos
-				if(this.getOperacion() instanceof OperacionVPO) {
-					System.out.println("=== FILTRADO DEMORAS ANTERIORES VPO ===");
-					System.out.println("Fecha inicio ejecución: " + fechaInicioEjecucionEventos);
-					System.out.println("Demoras anteriores sin filtrar: " + eventosOperacion.getDemorasAnteriores().size());
-
-					for(EventoAutomatico demoraAnterior : eventosOperacion.getDemorasAnteriores()) {
-						if(demoraAnterior.getFechaEvento().before(fechaInicioEjecucionEventos)) {
-							demoras.add(demoraAnterior);
-							System.out.println("  Incluida demora: " + demoraAnterior.getFechaEvento());
-						} else {
-							System.out.println("  Excluida demora: " + demoraAnterior.getFechaEvento() + " (posterior a fecha inicio)");
-						}
-					}
-
-					System.out.println("Demoras después del filtrado: " + demoras.size());
-					System.out.println("======================================");
-				} else {
-					demoras.addAll(eventosOperacion.getDemorasAnteriores());
-				}
+				demoras.addAll(eventosOperacion.getDemorasAnteriores());
 				Collections.sort(demoras, new EventoFechaEventoComparator());
 			}
 
