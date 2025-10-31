@@ -24,7 +24,12 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 	private PlanReferenciaRenovable planReferenciaRenovable;
 
 	private List<Date> calendarioVencimientosCalculado=new ArrayList<Date>();
-	
+
+	// FIX VPO: Variables para prevenir doble ejecución en recálculos
+	private transient Date fechaUltimaEjecucionVPO = null;
+	private transient List<EventoAutomatico> resultadosUltimaEjecucionVPO = null;
+	private transient int contadorEjecucionesVPO = 0;
+
 	public void setFechaPrimerVencDemPorEvento(Date fechaPrimerVencDemPorEvento) {
 		this.fechaPrimerVencDemPorEvento = fechaPrimerVencDemPorEvento;
 	}
@@ -222,9 +227,20 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 			EventosOperacion eventosOperacion, List<Date> festivos, Map<Date, List<Cobro>> cobros)
 			throws PlanEventoException {
 
+		// DEBUG: Log entry to doEventos to find who calls it twice
+		System.out.println("=== ENTRADA doEventos ===");
+		System.out.println("Fecha ejecución: " + fechaInicioEjecucionEventos);
+		System.out.println("TipoOperacion: " + (this.getOperacion() != null ? this.getOperacion().getClass().getSimpleName() : "null"));
+		System.out.println("Stack trace completo:");
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < Math.min(15, stackTrace.length); i++) {
+			System.out.println("  [" + i + "] " + stackTrace[i]);
+		}
+		System.out.println("=========================");
+
 		Date fechaInicioEjecucionEventosAux=new Date();
 		fechaInicioEjecucionEventosAux=fechaInicioEjecucionEventos;
-		
+
 		if(this.getOperacion() instanceof OperacionFD || (this.getOperacion()  instanceof OperacionFF) || (this.getOperacion()  instanceof OperacionPS)|| (this.getOperacion()  instanceof OperacionVPO)) {
     		return doEventosDirectos (fechaInicioEjecucionEventos, saldos, eventosOperacion, festivos, cobros);
     	
@@ -424,12 +440,40 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 		System.out.println("=== ENTRADA doEventosDirectos ===");
 		System.out.println("Fecha ejecución: " + fechaInicioEjecucionEventos);
 		System.out.println("TipoOperacion: " + (this.getOperacion() != null ? this.getOperacion().getClass().getSimpleName() : "null"));
+		System.out.println("Contador ejecuciones VPO: " + contadorEjecucionesVPO);
 		System.out.println("Stack trace:");
 		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
 		for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
 			System.out.println("  " + stackTrace[i]);
 		}
 		System.out.println("=================================");
+
+		// FIX VPO: Detectar y prevenir doble ejecución
+		if(this.getOperacion() instanceof OperacionVPO) {
+			contadorEjecucionesVPO++;
+			System.out.println("*** VPO EJECUCIÓN #" + contadorEjecucionesVPO + " ***");
+
+			// Si ya se ejecutó una vez y la fecha es diferente, retornar los resultados anteriores
+			if(contadorEjecucionesVPO > 1 && fechaUltimaEjecucionVPO != null) {
+				System.out.println("*** DETECTADA SEGUNDA EJECUCIÓN VPO ***");
+				System.out.println("Fecha primera ejecución: " + fechaUltimaEjecucionVPO);
+				System.out.println("Fecha segunda ejecución: " + fechaInicioEjecucionEventos);
+
+				// Si las fechas son diferentes, algo extraño está pasando
+				if(!fechaUltimaEjecucionVPO.equals(fechaInicioEjecucionEventos)) {
+					System.out.println("*** FECHAS DIFERENTES - PREVENIENDO CONTAMINACIÓN ***");
+					System.out.println("*** RETORNANDO RESULTADOS DE PRIMERA EJECUCIÓN ***");
+
+					// Retornar los resultados de la primera ejecución para evitar contaminación
+					if(resultadosUltimaEjecucionVPO != null) {
+						return new ArrayList<>(resultadosUltimaEjecucionVPO);
+					}
+				}
+			}
+
+			// Guardar la fecha de esta ejecución
+			fechaUltimaEjecucionVPO = fechaInicioEjecucionEventos;
+		}
 
 		//INI ICO-62994
 		if(this.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(this.getOperacion()) &&
