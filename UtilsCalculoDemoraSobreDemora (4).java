@@ -247,7 +247,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 							//INI ICO-62994
 							CantidadTramo tramoAux = tramo;
 							
-							if(planDemora.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(planDemora.getOperacion())) {
+							if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(planDemora.getOperacion())) {
 								tramoAux.setCantidad(importeAcumulado);
 								
 								for(CantidadTramo saldoAux : tramosAcumulados) {
@@ -276,7 +276,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 								}
 							}
 							//INI ICO-62994
-							if(planDemora.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(planDemora.getOperacion())) {
+							if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(planDemora.getOperacion())) {
 								tramoAnt = tramo;
 							}
 							//FIN ICO-62994
