@@ -157,8 +157,10 @@ public class UtilsCalculoDemoraSobreDemora  {
 
 				for(Evento liqDemora : demoras) {
 					if(!liqDemora.getFechaEvento().after(fechaInicioEjecucionEventos)) {
+						System.out.println("SKIP demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento() + " (fechaEvento <= fechaInicioEjecucionEventos)");
 						continue;
 					}
+					System.out.println("PROCESANDO demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
 					// INI ICO-62994
 					if(planDemora.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(planDemora.getOperacion()))
 					{
@@ -168,9 +170,9 @@ public class UtilsCalculoDemoraSobreDemora  {
 					}
 					// FIN ICO-62994
 					BigDecimal importeASumar = BigDecimal.ZERO;
-					
-					if(fechaInicioEjecucionEventos.compareTo(liqDemora.getFechaInicio())>=0) {
 
+					if(fechaInicioEjecucionEventos.compareTo(liqDemora.getFechaInicio())>=0) {
+						System.out.println("VPO: RAMA 1 - fechaInicioEjecucionEventos >= liqDemora.getFechaInicio() | Demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
 						//Genero demoras de la fecha inicio del evento a la fecha inicio ejecución
 						List<CantidadTramo> saldoDemoras = saldos.getSaldosOperacion(liqDemora.getFechaInicio(), liqDemora.getFechaEvento(),
 								EnumTipoSaldos.SALDO_MORA_DEMORA);
@@ -321,6 +323,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 						}
 					}
 					else {
+						System.out.println("VPO: RAMA 2 - fechaInicioEjecucionEventos < liqDemora.getFechaInicio() | Demora: " + liqDemora.getFechaInicio() + " -> " + liqDemora.getFechaEvento());
 						List<CantidadTramo> saldoDemoras = saldos.getSaldosOperacion(liqDemora.getFechaInicio(), liqDemora.getFechaEvento(),
 								EnumTipoSaldos.SALDO_MORA_DEMORA);
 						List<CantidadTramoDemora> tramosDemoraConSaldo = new ArrayList<CantidadTramoDemora>();
@@ -474,9 +477,11 @@ public class UtilsCalculoDemoraSobreDemora  {
 								}
 							}
 							if(!yaResto){
+								System.out.println("VPO DEBUG línea 479: Sumando importeASumar=" + importeASumar + " a importeAcumulado=" + importeAcumulado + " | tramo: " + tramo.getfechaIni() + " -> " + tramo.getfechaFin());
 								importeAcumulado = importeAcumulado.add(importeASumar);
+								System.out.println("VPO DEBUG línea 479: Nuevo importeAcumulado=" + importeAcumulado);
 							}
-							
+
 							listaCobros.removeAll(listaCobrosBorrarDos);
 						}
 
