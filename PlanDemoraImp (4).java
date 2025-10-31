@@ -419,12 +419,24 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 	public List<EventoAutomatico> doEventosDirectos(Date fechaInicioEjecucionEventos, SaldosTotalesOp saldos,
 			EventosOperacion eventosOperacion, List<Date> festivos, Map<Date, List<Cobro>> cobros)
 			throws PlanEventoException {
+
+		// DEBUG: Log entry to doEventosDirectos with call stack
+		System.out.println("=== ENTRADA doEventosDirectos ===");
+		System.out.println("Fecha ejecución: " + fechaInicioEjecucionEventos);
+		System.out.println("TipoOperacion: " + (this.getOperacion() != null ? this.getOperacion().getClass().getSimpleName() : "null"));
+		System.out.println("Stack trace:");
+		StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+		for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
+			System.out.println("  " + stackTrace[i]);
+		}
+		System.out.println("=================================");
+
 		//INI ICO-62994
 		if(this.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(this.getOperacion()) &&
 				eventosOperacion.isBajaCobro()){
 			fechaInicioEjecucionEventos = FechaUtils.sumaUnDiaCalendario(fechaInicioEjecucionEventos);
 		}
-		
+
 		Date fechaInicioEjecucionReal = fechaInicioEjecucionEventos;
 		Date fechaAux = null;
 		Boolean isFechaLiqAnt = false;
@@ -637,10 +649,30 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 		if (getConceptosDemora().contains(ConceptoDemoraEnum.DEMORAS.getCodigo())) {
 
 			if(eventosOperacion.getDemorasAnteriores()!=null){
-				demoras.addAll(eventosOperacion.getDemorasAnteriores());
+				// FIX: Para VPO, filtrar demorasAnteriores para evitar contaminación entre ejecuciones
+				// Solo incluir demoras con fechaEvento anterior a fechaInicioEjecucionEventos
+				if(this.getOperacion() instanceof OperacionVPO) {
+					System.out.println("=== FILTRADO DEMORAS ANTERIORES VPO ===");
+					System.out.println("Fecha inicio ejecución: " + fechaInicioEjecucionEventos);
+					System.out.println("Demoras anteriores sin filtrar: " + eventosOperacion.getDemorasAnteriores().size());
+
+					for(EventoAutomatico demoraAnterior : eventosOperacion.getDemorasAnteriores()) {
+						if(demoraAnterior.getFechaEvento().before(fechaInicioEjecucionEventos)) {
+							demoras.add(demoraAnterior);
+							System.out.println("  Incluida demora: " + demoraAnterior.getFechaEvento());
+						} else {
+							System.out.println("  Excluida demora: " + demoraAnterior.getFechaEvento() + " (posterior a fecha inicio)");
+						}
+					}
+
+					System.out.println("Demoras después del filtrado: " + demoras.size());
+					System.out.println("======================================");
+				} else {
+					demoras.addAll(eventosOperacion.getDemorasAnteriores());
+				}
 				Collections.sort(demoras, new EventoFechaEventoComparator());
 			}
-			
+
 			PlanInteresPorEvento pie = this.getPlanInteresPorDefectoVigente();
 			Set<TipoInteresFijado> tipos = pie.getTipoInteres();
 				
