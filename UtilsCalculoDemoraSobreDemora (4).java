@@ -338,11 +338,22 @@ public class UtilsCalculoDemoraSobreDemora  {
 							tramosDemoraConSaldo.add(tramo);
 						}
 						tramosDemora = tramosDemoraConSaldo;
-						
-						if(!(planDemora.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,liqDemora.getFechaEvento(),festivos))) { //ICO-62994
+
+						// FIX VPO: Aplicar mismo filtro de fecha para VPO que para FD
+						if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO)
+								&& !esCarteraTraspasada(planDemora.getOperacion())) {
+							// Para FD y VPO: solo asignar importe si hoy > fecha ajustada (fecha ya pasó)
+							if(hoy.after(getFechaAjustadaCobro(planDemora,liqDemora.getFechaEvento(),festivos))) {
+								importeASumar = liqDemora.getImporte().getCantidad();
+								System.out.println("DEBUG L342: Asignando importeASumar=" + importeASumar + " de demora fechaEvento=" + liqDemora.getFechaEvento());
+							} else {
+								System.out.println("DEBUG L342: NO asignando importeASumar de demora fechaEvento=" + liqDemora.getFechaEvento() + " (fecha no ha pasado aún)");
+							}
+						} else {
+							// Para otros tipos: asignar siempre
 							importeASumar = liqDemora.getImporte().getCantidad();
 						}
-						
+
 						if(tramosDemora.isEmpty()){
 							importeAcumulado=importeAcumulado.add(importeASumar);
 						}
