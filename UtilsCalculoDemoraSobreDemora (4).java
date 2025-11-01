@@ -176,7 +176,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 								EnumTipoSaldos.SALDO_MORA_DEMORA);
 						
 						//INI ICO-62994
-						if(planDemora.getOperacion() instanceof OperacionFD && !esCarteraTraspasada(planDemora.getOperacion()))
+						if((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(planDemora.getOperacion()))
 						{
 							if(saldoDemoras != null && saldoDemoras.size() > 1) {
 								saldoDemorasAux = getSaldosDemorasABorrar(planDemora, saldoDemoras, festivos, hoy);
