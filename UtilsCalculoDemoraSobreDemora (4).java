@@ -271,9 +271,7 @@ public class UtilsCalculoDemoraSobreDemora  {
 								if (demoraSobreDemora.getImporte().getCantidad().compareTo(BigDecimal.ZERO)>0)
 									demorasSobreDemoras.add(demoraSobreDemora);
 	
-								// FIX VPO: Aplicar filtro de fecha solo para VPO (FD ya funciona bien sin filtro)
-								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null
-										&& (!(planDemora.getOperacion() instanceof OperacionVPO && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos)))) { //ICO-62994
+								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null) {
 									importeASumar = importeASumar.add(demoraSobreDemora.getImporte().getCantidad());
 								}
 							}
