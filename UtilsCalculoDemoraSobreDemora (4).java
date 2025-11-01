@@ -271,9 +271,9 @@ public class UtilsCalculoDemoraSobreDemora  {
 								if (demoraSobreDemora.getImporte().getCantidad().compareTo(BigDecimal.ZERO)>0)
 									demorasSobreDemoras.add(demoraSobreDemora);
 	
-								// FIX VPO: Aplicar filtro de fecha para evitar suma incorrecta al dividir demoras
+								// FIX VPO: Aplicar filtro de fecha solo para VPO (FD ya funciona bien sin filtro)
 								if (demoraSobreDemora.getImporte()!=null&&demoraSobreDemora.getImporte().getCantidad()!=null
-										&& (!((planDemora.getOperacion() instanceof OperacionFD || planDemora.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos)))) { //ICO-62994
+										&& (!(planDemora.getOperacion() instanceof OperacionVPO && !esCarteraTraspasada(planDemora.getOperacion())) || hoy.after(getFechaAjustadaCobro(planDemora,demoraSobreDemora.getFechaEvento(),festivos)))) { //ICO-62994
 									importeASumar = importeASumar.add(demoraSobreDemora.getImporte().getCantidad());
 								}
 							}
