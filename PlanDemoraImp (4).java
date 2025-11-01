@@ -649,7 +649,7 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 
 		if(eventosOperacion.getDemorasAnteriores()!=null){
 			// FIX VPO: Filtrar demorasAnteriores para excluir las que se superponen con demoras recalculadas
-			if((this.getOperacion() instanceof OperacionFD || this.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(this.getOperacion())) {
+			if(this.getOperacion() instanceof OperacionVPO && !esCarteraTraspasada(this.getOperacion())) {
 				for(EventoAutomatico demoraAnterior : eventosOperacion.getDemorasAnteriores()) {
 					// Solo añadir si NO se superpone con las demoras nuevas calculadas
 					boolean seSuperpone = false;
