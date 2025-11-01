@@ -647,10 +647,28 @@ public class PlanDemoraImp extends PlanEventoImp implements PlanDemora {
 
 		if (getConceptosDemora().contains(ConceptoDemoraEnum.DEMORAS.getCodigo())) {
 
-			if(eventosOperacion.getDemorasAnteriores()!=null){
+		if(eventosOperacion.getDemorasAnteriores()!=null){
+			// FIX VPO: Filtrar demorasAnteriores para excluir las que se superponen con demoras recalculadas
+			if((this.getOperacion() instanceof OperacionFD || this.getOperacion() instanceof OperacionVPO) && !esCarteraTraspasada(this.getOperacion())) {
+				for(EventoAutomatico demoraAnterior : eventosOperacion.getDemorasAnteriores()) {
+					// Solo añadir si NO se superpone con las demoras nuevas calculadas
+					boolean seSuperpone = false;
+					for(EventoAutomatico nuevaDemora : demoras) {
+						if(demoraAnterior.getFechaInicio().compareTo(nuevaDemora.getFechaEvento()) < 0
+						   && demoraAnterior.getFechaEvento().compareTo(nuevaDemora.getFechaInicio()) > 0) {
+							seSuperpone = true;
+							break;
+						}
+					}
+					if(!seSuperpone) {
+						demoras.add(demoraAnterior);
+					}
+				}
+			} else {
 				demoras.addAll(eventosOperacion.getDemorasAnteriores());
-				Collections.sort(demoras, new EventoFechaEventoComparator());
 			}
+			Collections.sort(demoras, new EventoFechaEventoComparator());
+		}
 
 			PlanInteresPorEvento pie = this.getPlanInteresPorDefectoVigente();
 			Set<TipoInteresFijado> tipos = pie.getTipoInteres();
